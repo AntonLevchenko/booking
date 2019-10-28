@@ -5,14 +5,28 @@ let advertisementsTitle = [
 ];
 let advertisementsTimes = ['12:00', '13:00', '14:00'];
 let advertisementsFeatures = ['wifi', 'dishwasher', 'parking', 'washer', 'elevator', 'conditioner'];
-let advertisementsPhotos = ['http://o0.github.io/assets/images/tokyo/hotel1.jpg', 'http://o0.github.io/assets/images/tokyo/hotel2.jpg', 'http://o0.github.io/assets/images/tokyo/hotel3.jpg'];
+let advertisementsPhotos = [
+    'http://o0.github.io/assets/images/tokyo/hotel1.jpg',
+    'http://o0.github.io/assets/images/tokyo/hotel2.jpg',
+    'http://o0.github.io/assets/images/tokyo/hotel3.jpg'
+];
 let advertisementsTypes = ['palace', 'flat', 'ho use', 'bungalo'];
-let mapFiltersContainer = document.querySelector('.map__filters-container');
+let map = document.querySelector('.map');
+let mapFiltersContainer = map.querySelector('.map__filters-container');
+let mapCardContainer = map.querySelector('.map__cards-container');
 let mapCard = document.querySelector('#map__card')
             .content
             .querySelector('.map__card');
+let mapPin = document.querySelector('#map__card')
+            .content
+            .querySelector('.map__pin');
+let mapPins = map.querySelector('.map__pins');
 let advertisementsList = createAdvertisements();
-let pictureList = mapCard.querySelector('.popup__pictures');
+let mainPin = map.querySelector('.map__pin--main');
+
+function generateId() {
+    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15 >> c/4).toString(16));
+}
 
 function randomInteger(min, max) {
     let rand = min + Math.random() * (max + 1 - min);
@@ -27,23 +41,30 @@ function createAdvertisements() {
             'author': {
                 'avatar': `img/avatars/user${i < 10 ? '0' + (i + 1) : i + 1}.png`
             },
+            'location': {
+                'x': randomInteger(200, map.offsetWidth),
+                'y': randomInteger(130, 630),
+            },
             'offer': {
                 'title': advertisementsTitle[i],
-                'address': `${location.x}, ${location.y}`,
                 'price': randomInteger(1000, 1000000),
                 'type': advertisementsTypes[randomInteger(0, advertisementsTypes.length - 1)],
                 'rooms':  randomInteger(1, 5),
                 'guests':  randomInteger(1, 20),
                 'checkin': advertisementsTimes[randomInteger(0, advertisementsTimes.length - 1)],
                 'checkout': advertisementsTimes[randomInteger(0, advertisementsTimes.length - 1)],
-                'features': advertisementsFeatures.slice(randomInteger(0, advertisementsFeatures.length - 1), randomInteger(0, advertisementsFeatures.length - 1)),
-                'description': 'Description Lorem ipsum dolor sit amet, consectetur adipisicing elit. Assumenda consequuntur doloribus explicabo modi molestias nam, numquam perferendis placeat rerum temporibus.',
-                'photos': advertisementsPhotos[randomInteger(0, advertisementsPhotos.length - 1)],
+                'features': advertisementsFeatures.slice(
+                    randomInteger(0, advertisementsFeatures.length - 1),
+                    randomInteger(0, advertisementsFeatures.length - 1)
+                ),
+                'description': 'Description Lorem ipsum dolor sit amet, consectetur adipisicing elit. Assumenda' +
+                    'consequuntur doloribus explicabo modi molestias nam, numquam perferendis placeat rerum temporibus.',
+                'photos': advertisementsPhotos[randomInteger(0, advertisementsPhotos.length - 1)]
             },
-            'location': {
-                'x': randomInteger(0, 200),
-                'y': randomInteger(130, 630),
-            }
+            get address() {
+                return `${this.location.x}, ${this.location.y}`
+            },
+            'id': generateId()
         };
 
         advertisements.push(advertisement);
@@ -51,10 +72,6 @@ function createAdvertisements() {
 
     return advertisements;
 }
-
-//
-document.querySelector('.map').classList.remove('map--faded');
-//
 
 function renderCardFeatures(card) {
     let holder = document.createDocumentFragment();
@@ -73,7 +90,7 @@ function renderMapCard(card) {
     let cardElement = mapCard.cloneNode(true);
     cardElement.querySelector('.popup__avatar').setAttribute('src', card.author.avatar);
     cardElement.querySelector('.popup__title').textContent = card.offer.title;
-    cardElement.querySelector('.popup__text--address').textContent = card.offer.address;
+    cardElement.querySelector('.popup__text--address').textContent = card.address;
     cardElement.querySelector('.popup__text--price').textContent = `${card.offer.price} ₽/ночь`;
     cardElement.querySelector('.popup__text--capacity').textContent = `${card.offer.rooms} комнаты для ${card.offer.guests} гостей`;
     cardElement.querySelector('.popup__text-time').textContent = `Заезд после ${card.offer.checkin}, выезд до ${card.offer.checkout}`;
@@ -84,10 +101,67 @@ function renderMapCard(card) {
     return cardElement;
 }
 
-function renderMapCards() {
+function renderMapPin(card) {
+    let pinElement = mapPin.cloneNode(true);
+    let pinImg = pinElement.querySelector('img');
+
+    pinElement.style.left = card.location.x - pinElement.offsetWidth / 2 + 'px';
+    pinElement.style.top = card.location.y + pinElement.offsetHeight + 'px';
+    pinElement.setAttribute('data-id', card.id);
+
+    pinImg.src = card.author.avatar;
+    pinImg.alt = card.offer.title;
+
+    return pinElement;
+}
+
+function renderMapPins() {
     for (let i = 0; i < 8; i++) {
-        mapFiltersContainer.before( renderMapCard(advertisementsList[i]) );
+        let pin = renderMapPin( advertisementsList[i] );
+        mapPins.append( pin );
+        pin.addEventListener('click', pinClickHandler);
     }
 }
 
-renderMapCards();
+function pinClickHandler(evt) {
+    let target = evt.target.closest('.map__pin');
+    let id = target.dataset.id;
+    let card = advertisementsList.find(card => card.id === id);
+
+    target.classList.add('active');
+    showMapCard(card);
+}
+
+function showMapCard(card) {
+    removeMapCard();
+
+    let mapCard = renderMapCard(card);
+    mapCardContainer.append( mapCard );
+
+    addCloseListener(mapCard);
+}
+
+function addCloseListener(card) {
+    let closeBtn = card.querySelector('.popup__close');
+
+    if (!closeBtn) return;
+
+    closeBtn.addEventListener('click', function (e) {
+        removeMapCard();
+    });
+}
+
+function removeMapCard() {
+    mapCardContainer.innerHTML = '';
+}
+
+function enabledForm() {
+    map.classList.remove('map--faded');
+    noticeForm.classList.remove('notice__form--disabled');
+
+    renderMapPins();
+}
+
+mainPin.addEventListener('mouseup', function (e) {
+    enabledForm();
+});
