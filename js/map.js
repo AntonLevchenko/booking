@@ -23,6 +23,12 @@ let mapPin = document.querySelector('#map__card')
 let mapPins = map.querySelector('.map__pins');
 let advertisementsList = createAdvertisements();
 let mainPin = map.querySelector('.map__pin--main');
+let addressInput = noticeForm.elements['address'];
+const PIN_SIZES = {
+    width: 46,
+    height: 46
+};
+const PIN_TRIANGLE_HEIGHT = 10;
 
 function generateId() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15 >> c/4).toString(16));
@@ -105,8 +111,8 @@ function renderMapPin(card) {
     let pinElement = mapPin.cloneNode(true);
     let pinImg = pinElement.querySelector('img');
 
-    pinElement.style.left = card.location.x - pinElement.offsetWidth / 2 + 'px';
-    pinElement.style.top = card.location.y + pinElement.offsetHeight + 'px';
+    pinElement.style.left = card.location.x - PIN_SIZES.width + 'px';
+    pinElement.style.top = card.location.y + PIN_SIZES.height + PIN_TRIANGLE_HEIGHT + 'px';
     pinElement.setAttribute('data-id', card.id);
 
     pinImg.src = card.author.avatar;
@@ -162,6 +168,14 @@ function enabledForm() {
     renderMapPins();
 }
 
+function setPointerCoords(coords) {
+    addressInput.value = `x: ${coords.x}, y: ${coords.y}`;
+}
+
 mainPin.addEventListener('mouseup', function (e) {
     enabledForm();
 });
+
+window.map = {
+    setPointerCoords
+};

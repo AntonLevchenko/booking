@@ -248,8 +248,8 @@ img {
   left: 50%;
   top: 375px;
 
-  width: 65px;
-  height: 65px;
+  width: 62px;
+  height: 62px;
 
   cursor: move;
 }
@@ -381,6 +381,7 @@ img {
 .popup__pictures li {
   display: inline-block;
   vertical-align: middle;
+  max-width: 30%;
 }
 
 .popup__avatar {
