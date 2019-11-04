@@ -37,14 +37,15 @@
         }
     }
 
+    function resetPinCoords() {
+        mapPin.style.left = '50%';
+        mapPin.style.top = '375px';
+    }
+
     mapPin.addEventListener('mousedown', function (evt) {
         evt.preventDefault();
 
-        let dragged = false;
-        // let startCoords = {
-        //     x: evt.clientX,
-        //     y: evt.clientY
-        // };
+        if (!window.form.enabledForm) return;
 
         let shift = {
             x: evt.clientX - mapPin.getBoundingClientRect().left,
@@ -54,44 +55,24 @@
         function onMouseMove(moveEvt) {
 
             let moveCoords = {
-                top: moveEvt.clientY + mapPins.getBoundingClientRect().top + shift.y + PIN_SIZES.height / 2,
-                left: moveEvt.clientX - mapPins.getBoundingClientRect().left + shift.x + PIN_SIZES.width / 2,
+                top: moveEvt.clientY - mapPins.getBoundingClientRect().top - shift.y + PIN_SIZES.height / 2,
+                left: moveEvt.clientX - mapPins.getBoundingClientRect().left - shift.x + PIN_SIZES.width / 2,
             };
+
+            limitCoords(moveCoords);
 
             mapPin.style.top = moveCoords.top + 'px';
             mapPin.style.left = moveCoords.left + 'px';
-            // dragged = true;
-            //
-            // let shift = {
-            //     x: startCoords.x - moveEvt.clientX,
-            //     y: startCoords.y - moveEvt.clientY
-            // };
-            //
-            // startCoords = {
-            //     x: moveEvt.clientX,
-            //     y: moveEvt.clientY
-            // };
-            //
-            // let moveCoords = {
-            //     top: mapPin.offsetTop - shift.y,
-            //     left: mapPin.offsetLeft - shift.x
-            // };
-            //
-            // limitCoords(moveCoords);
-            //
-            // mapPin.style.top = moveCoords.top + 'px';
-            // mapPin.style.left = moveCoords.left + 'px';
-            //
-            // let pointerCoords = {
-            //     x: mapPin.offsetLeft,
-            //     y: mapPin.offsetTop + PIN_TRIANGLE_HEIGHT + PIN_SIZES.height / 2
-            // };
-            //
-            // window.map.setPointerCoords(pointerCoords);
+
+            let pointerCoords = {
+                x: mapPin.offsetLeft,
+                y: mapPin.offsetTop + PIN_TRIANGLE_HEIGHT + PIN_SIZES.height / 2
+            };
+
+            window.map.setPointerCoords(pointerCoords);
         }
 
         function onMouseUp(upEvt) {
-
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
         }
@@ -99,4 +80,8 @@
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
     });
+
+    window.dragAndDrop = {
+        resetPinCoords
+    }
 })();
