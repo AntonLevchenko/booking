@@ -68,8 +68,14 @@
         return pinElement;
     }
 
-    function renderMapPins(pins) {
+    function onload(pins) {
         advertisementsList = window.utils.addIDToElems(pins);
+
+        renderMapPins(advertisementsList);
+    }
+
+    function renderMapPins(advertisementsList) {
+        removeMapPins();
 
         for (let i = 0; i < advertisementsList.length; i++) {
             let pin = renderMapPin( advertisementsList[i] );
@@ -80,6 +86,8 @@
 
     function removeMapPins() {
         let mapPins = document.querySelectorAll('.map__pin:not(.map__pin--main)');
+
+        if (!mapPins) return;
 
         mapPins.forEach(pin => {
             pin.remove();
@@ -122,10 +130,22 @@
         addressInput.value = `x: ${coords.x}, y: ${coords.y}`;
     }
 
+    function getAdvertisementsList() {
+        return advertisementsList;
+    }
+
+    function rebuildMaps(ads) {
+        removeMapCard();
+        renderMapPins(ads);
+    }
+
     window.map = {
         renderMapPins,
         removeMapPins,
         removeMapCard,
-        setPointerCoords
+        setPointerCoords,
+        getAdvertisementsList,
+        rebuildMaps,
+        onload
     }
 })();

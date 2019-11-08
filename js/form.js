@@ -9,7 +9,7 @@
 
         map.classList.remove('map--faded');
         noticeForm.classList.remove('notice__form--disabled');
-        window.backend.load(window.map.renderMapPins);
+        window.backend.load(window.map.onload);
     }
 
     function disableForm() {
@@ -21,6 +21,7 @@
         window.dragAndDrop.resetPinCoords();
         window.map.removeMapPins();
         window.map.removeMapCard();
+        window.filter.resetFilters();
     }
 
     function onFormSubmited() {
@@ -39,6 +40,10 @@
     }
 
     mainPin.addEventListener('mouseup', function (evt) {
+        if (window.dragAndDrop.dragged) {
+            return
+        }
+
         enableForm();
     });
 

@@ -44,6 +44,7 @@
 
     mapPin.addEventListener('mousedown', function (evt) {
         evt.preventDefault();
+        window.dragAndDrop.dragged = false;
 
         if (!window.form.enabledForm) return;
 
@@ -53,6 +54,7 @@
         };
 
         function onMouseMove(moveEvt) {
+            window.dragAndDrop.dragged = true;
 
             let moveCoords = {
                 top: moveEvt.clientY - mapPins.getBoundingClientRect().top - shift.y + PIN_SIZES.height / 2,
@@ -73,6 +75,8 @@
         }
 
         function onMouseUp(upEvt) {
+            window.dragAndDrop.dragged = false;
+
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
         }
