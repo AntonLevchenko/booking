@@ -619,8 +619,28 @@ img {
   color: #ff5635;
 }
 
-.form__photo-container {
+.form__photo-container .upload {
   width: 140px;
+  margin-bottom: 20px;
+}
+
+.preview-list {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.preview-list li {
+  display: block;
+  max-width: 100px;
+  margin-right: 20px;
+  margin-bottom: 20px;
+}
+
+.preview-list li:last-child {
+  margin-right: 0;
 }
 
 .form__element--submit {
